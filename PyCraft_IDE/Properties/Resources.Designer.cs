@@ -63,6 +63,26 @@ namespace PyCraft_IDE.Properties {
         /// <summary>
         ///   System.Drawing.Bitmap 형식의 지역화된 리소스를 찾습니다.
         /// </summary>
+        internal static System.Drawing.Bitmap box {
+            get {
+                object obj = ResourceManager.GetObject("box", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   System.Drawing.Bitmap 형식의 지역화된 리소스를 찾습니다.
+        /// </summary>
+        internal static System.Drawing.Bitmap class_libraries {
+            get {
+                object obj = ResourceManager.GetObject("class_libraries", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   System.Drawing.Bitmap 형식의 지역화된 리소스를 찾습니다.
+        /// </summary>
         internal static System.Drawing.Bitmap icons8_command_line_32 {
             get {
                 object obj = ResourceManager.GetObject("icons8_command_line_32", resourceCulture);
@@ -143,6 +163,16 @@ namespace PyCraft_IDE.Properties {
         /// <summary>
         ///   System.Drawing.Bitmap 형식의 지역화된 리소스를 찾습니다.
         /// </summary>
+        internal static System.Drawing.Bitmap icons8_redo_30 {
+            get {
+                object obj = ResourceManager.GetObject("icons8_redo_30", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   System.Drawing.Bitmap 형식의 지역화된 리소스를 찾습니다.
+        /// </summary>
         internal static System.Drawing.Bitmap icons8_restart_32 {
             get {
                 object obj = ResourceManager.GetObject("icons8_restart_32", resourceCulture);
@@ -156,6 +186,16 @@ namespace PyCraft_IDE.Properties {
         internal static System.Drawing.Bitmap icons8_stop_32 {
             get {
                 object obj = ResourceManager.GetObject("icons8_stop_32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   System.Drawing.Bitmap 형식의 지역화된 리소스를 찾습니다.
+        /// </summary>
+        internal static System.Drawing.Bitmap icons8_undo_30 {
+            get {
+                object obj = ResourceManager.GetObject("icons8_undo_30", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

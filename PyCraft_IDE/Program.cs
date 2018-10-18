@@ -16,7 +16,15 @@ namespace PyCraft_IDE
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            restart:
+            try
+            {
+                Application.Run(new MainForm());
+            }
+            catch (ArgumentOutOfRangeException arge)
+            {
+                goto restart;
+            }
         }
     }
 }
