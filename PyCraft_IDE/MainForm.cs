@@ -1,18 +1,16 @@
 ﻿using FarsiLibrary.Win;
 using FastColoredTextBoxNS;
+using ICSharpCode.SharpZipLib.Zip;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace PyCraft_IDE
@@ -38,13 +36,15 @@ namespace PyCraft_IDE
                "def name(^):\n"
                };
         string currPath = Environment.CurrentDirectory;
+        string temp = Environment.CurrentDirectory + "\\temp";
+
         Style invisibleCharsStyle = new InvisibleCharsRenderer(Pens.Gray);
         Color currentLineColor = Color.FromArgb(100, 210, 210, 255);
         Color changedLineColor = Color.FromArgb(255, 230, 230, 255);
 
-        HotkeysMapping keySettings = new HotkeysMapping();
+        bool pythonInstalled = false;
 
-        bool stop;
+        HotkeysMapping keySettings = new HotkeysMapping();
 
         DateTime lastNavigatedDateTime = DateTime.Now;
 
@@ -58,6 +58,31 @@ namespace PyCraft_IDE
         {
             TreeViewInit.TrvInit(currPath, trvDirectory.Nodes, 0, 1);
             timer1.Start();
+            DirectoryInfo di = new DirectoryInfo(Environment.CurrentDirectory + "\\Python");
+            if (!di.Exists)
+                IDE_Setup();
+
+            string pyPath1 = @"C:\Users\% UserName\AppData\Local\Programs\Python\Python36\Scripts\";
+            string pyPath2 = @"C:\Users\% UserName\AppData\Local\Programs\Python\Python36";
+            string winpyPath1 = Environment.CurrentDirectory + @"\Python\python-3.7.0.amd64";
+            string winpyPath2 = Environment.CurrentDirectory + @"\Python\python-3.7.0.amd64\Scripts\";
+            string sysPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine);
+            string[] oldPath = sysPath.Split(';');
+            var newPath = new StringBuilder();
+
+            if (!(oldPath.Contains(pyPath1) && oldPath.Contains(pyPath2)))
+            {
+                if (!(oldPath.Contains(winpyPath1) && oldPath.Contains(winpyPath2)))
+                {
+                    newPath.Append(winpyPath1 + ";");
+                    newPath.Append(winpyPath2 + ";");
+                    foreach (string ePath in oldPath)
+                    {
+                        newPath.Append(ePath + ";");
+                    }
+                    Environment.SetEnvironmentVariable("Path", newPath.ToString(), EnvironmentVariableTarget.Machine);
+                }
+            }
         }
 
         private void trvDirectory_AfterSelect(object sender, TreeViewEventArgs e)
@@ -67,44 +92,151 @@ namespace PyCraft_IDE
                 CreateTab(currPath + "\\" + trvDirectory.SelectedNode.FullPath);
         }
 
-        /*
-        private void StartConsole()
+        private void IDE_Setup()
         {
-            OperatingSystem os = Environment.OSVersion;
-            Version v = os.Version;
-
-            switch (os.Platform)
+            WebClient pythonDownloader = new WebClient();
+            pythonDownloader.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgressChanged);
+            pythonDownloader.DownloadFileCompleted += new AsyncCompletedEventHandler(PythonDownloadCompleted);
+            DirectoryInfo di = new DirectoryInfo(temp);
+            if (di.Exists == false)
+                di.Create(); 
+            try
             {
-                case PlatformID.Win32NT:
-                    if (os.Version.Major == 6)
-                    {
-                        CurrentTerminal.StartProcess("powershell", null);
-                        UpdateUIState();
-                    }
-                    else
-                    {
-                        CurrentTerminal.StartProcess("cmd", null);
-                        UpdateUIState();
-                    }
-                    break;
-
-                default:
-                    MessageBox.Show("PyCraft IDE가 실행 되고 있는 " +
-                        "플랫폼의 정보를 읽어 드릴 수 없습니다.", "Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    break;
+                MessageBox.Show("파일 다운로드를 시작합니다.", "파일 다운로드", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (Environment.Is64BitOperatingSystem == true)
+                    pythonDownloader.DownloadFileAsync(new Uri("https://www.dropbox.com/s/f1d0g7r3f1frdzk/WinPython64-3.7.0.2Zero.exe?dl=1"), temp + "\\WinPython64-3.7.0.2Zero.exe");
+                else
+                    pythonDownloader.DownloadFileAsync(new Uri("https://www.dropbox.com/s/1ne01rdcr7vkq5a/WinPython32-3.7.0.2Zero.exe?dl=1"), temp + "\\WinPython32-3.7.0.2Zero.exe");
+            }
+            catch (Exception ex)
+            { 
+                MessageBox.Show("파이썬 설치 도중 에러가 발생했습니다." + "\n" + "Error : " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        */
+
+        private void PythonDownloadCompleted(object sender, AsyncCompletedEventArgs e)
+        {
+            WebClient pycraftDownloader = new WebClient();
+            pycraftDownloader.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgressChanged);
+            pycraftDownloader.DownloadFileCompleted += new AsyncCompletedEventHandler(PycraftDownloadCompleted);
+            Process pro = new Process();
+            DirectoryInfo di = new DirectoryInfo(temp);
+            MessageBox.Show("파이썬을 temp 폴더 안에 설치해주세요!", "주의", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (Environment.Is64BitOperatingSystem == true)
+            {
+                pro.StartInfo.FileName = temp + "\\WinPython64-3.7.0.2Zero.exe";
+                pro.Start();
+                pro.WaitForExit();
+            }
+            else
+            {
+                pro.StartInfo.FileName = temp + "\\WinPython32-3.7.0.2Zero.exe";
+                pro.Start();
+                pro.WaitForExit();
+            }
+
+            di = new DirectoryInfo(temp + "\\WPy-3702");
+            if (di.Exists == true)
+            {
+                DirectoryInfo target = new DirectoryInfo(Environment.CurrentDirectory + "\\Python");
+                CopyFiles(di, target);
+                //MessageBox.Show("파이썬 설치가 성공적으로 완료 되었습니다.", "설치 완료", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                pythonInstalled = true;
+            }
+            else
+            {
+                MessageBox.Show("파이썬을 temp 폴더 안에 설치해주세요!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Directory.Delete(temp, true);
+            }
+
+            if (pythonInstalled == true)
+            {
+                pycraftDownloader.DownloadFileAsync(new Uri("https://github.com/minecraft-codingmath/pycraft/archive/master.zip"), Environment.CurrentDirectory + "\\temp\\pycraft-master.zip");
+            }
+        } 
+
+        private void DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        {
+            toolStripProgressBar1.Value = e.ProgressPercentage;
+        }
+
+        private void PycraftDownloadCompleted(object sender, AsyncCompletedEventArgs e)
+        {
+            toolStripProgressBar1.Value = 0;
+            DeCompression(Environment.CurrentDirectory + "\\temp\\pycraft-master.zip", Environment.CurrentDirectory);
+            Directory.Delete(temp, true);
+            DirectoryInfo di = new DirectoryInfo(Environment.CurrentDirectory + "\\pycraft-master\\src\\core");
+            DirectoryInfo target = new DirectoryInfo(Environment.CurrentDirectory);
+            CopyFiles(di, target);
+            MessageBox.Show("파일 설치가 완료 되었습니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void DeCompression(string filename, string destination)
+        {
+            string zipPath = filename;
+            string extractDir = destination;
+
+            FileStream fs = new FileStream(zipPath, FileMode.Open,
+                                         FileAccess.Read, FileShare.Read);
+
+            ZipInputStream zis = new ZipInputStream(fs);
+            ZipEntry ze;
+
+            while ((ze = zis.GetNextEntry()) != null)
+            {
+                if (!ze.IsDirectory)
+                {
+                    string fileName = Path.GetFileName(ze.Name);
+                    string destDir = Path.Combine(extractDir,
+                                     Path.GetDirectoryName(ze.Name));
+
+                    if (false == Directory.Exists(destDir))
+                    {
+                       Directory.CreateDirectory(destDir);
+                    }
+
+                    string destPath = Path.Combine(destDir, fileName);
+
+                    FileStream writer = new FileStream(
+                                    destPath, FileMode.Create,
+                                            FileAccess.Write,
+                                                FileShare.Write);
+
+                    byte[] buffer = new byte[2048];
+                    int len;
+                    while ((len = zis.Read(buffer, 0, buffer.Length)) > 0)
+                    {
+                        writer.Write(buffer, 0, len);
+                    }
+
+                    writer.Close();
+                }
+            }
+
+            zis.Close();
+            fs.Close();
+        }
+
+        public static void CopyFiles(DirectoryInfo source, DirectoryInfo target)
+        {
+            if (target.Exists == false)
+                target.Create();
+            foreach (DirectoryInfo dir in source.GetDirectories())
+                CopyFiles(dir, target.CreateSubdirectory(dir.Name));
+            foreach (FileInfo file in source.GetFiles())
+                file.CopyTo(Path.Combine(target.FullName, file.Name));
+        }
 
         private void UpdateUIState()
         {
             //  Update the state.
             if (CurrentTerminal != null)
                 if (CurrentTerminal.IsProcessRunning)
-                    consoleState.Text = Path.GetFileName(CurrentTerminal.ProcessInterface.ProcessFileName) + "실행 중";
+                    consoleState.Text = "터미널 상태 : " + Path.GetFileName(CurrentTerminal.ProcessInterface.ProcessFileName) + "실행 중";
+                else
+                    consoleState.Text = "터미널 상태 : 실행 중 아님";
             else
-                consoleState.Text = "실행 중 아님";
+                consoleState.Text = "";
         }
         
         private void btn_openCMD_Click(object sender, EventArgs e)
@@ -163,28 +295,46 @@ namespace PyCraft_IDE
         }
 
         private void CreateTerminal(string args)
-        {           
+        {
+            string psPath = Environment.CurrentDirectory + "\\Python\\WinPython Powershell Prompt.exe";
+            string cmdPath = Environment.CurrentDirectory + "\\Python\\WinPython Command Prompt.exe";
+
             var console = new ConsoleControl.ConsoleControl();
             console.Font = new Font("Consolas", 9.75f);
             console.Dock = DockStyle.Fill;
             FATabStripItem tab;
+            
 
             if (args == "powershell")
                 tab = new FATabStripItem("[Powershell]", console);
             else if (args == "cmd")
                 tab = new FATabStripItem("[CMD]", console);
-            else
+            else 
                 tab = new FATabStripItem(Path.GetFileName(args) + " [터미널]", console);
 
             console.Tag = CurrentTB.Name;
             console.Tag = new TbInfo();
             tsConsole.AddTab(tab);
             tsConsole.SelectedItem = tab;
+            // 파일이 존재 하는지 확인
 
             if (args == "powershell")
-                CurrentTerminal.StartProcess(args, null);
+            {
+                FileInfo fi = new FileInfo(psPath);
+                if (fi.Exists)
+                    CurrentTerminal.StartProcess(psPath, null);
+            }
             else if (args == "cmd")
-                CurrentTerminal.StartProcess(args, null);
+            {
+                FileInfo fi = new FileInfo(cmdPath);
+                if (fi.Exists)
+                    CurrentTerminal.StartProcess(cmdPath, null);
+            }
+            else
+            {
+                CurrentTerminal.StartProcess("python", args);
+            }
+
         }
 
         FastColoredTextBox CurrentTB
@@ -513,7 +663,6 @@ namespace PyCraft_IDE
 
         private void btn_start_Click(object sender, EventArgs e)
         {
-            //CreateConsole(currPath + "\\" + trvDirectory.SelectedNode.FullPath);
             CreateTerminal(currPath + "\\" + trvDirectory.SelectedNode.FullPath);
         }
 

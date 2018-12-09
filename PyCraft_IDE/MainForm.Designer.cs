@@ -50,8 +50,8 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.tsConsole = new FarsiLibrary.Win.FATabStrip();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.consoleState = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.파일ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.새로만들기ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -259,7 +259,7 @@
             this.btn_openCMD.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btn_openCMD.Name = "btn_openCMD";
             this.btn_openCMD.Size = new System.Drawing.Size(28, 28);
-            this.btn_openCMD.Text = "터미널 열기";
+            this.btn_openCMD.Text = "명령프롬프트 열기";
             this.btn_openCMD.Click += new System.EventHandler(this.btn_openCMD_Click);
             // 
             // btn_openPowershell
@@ -269,7 +269,7 @@
             this.btn_openPowershell.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btn_openPowershell.Name = "btn_openPowershell";
             this.btn_openPowershell.Size = new System.Drawing.Size(28, 28);
-            this.btn_openPowershell.Text = "콘솔 열기";
+            this.btn_openPowershell.Text = "PowerShell 열기";
             this.btn_openPowershell.Click += new System.EventHandler(this.btn_openPowershell_Click);
             // 
             // toolStripSeparator5
@@ -324,25 +324,24 @@
             // 
             this.statusStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripStatusLabel1,
-            this.consoleState});
+            this.consoleState,
+            this.toolStripProgressBar1});
             this.statusStrip1.Location = new System.Drawing.Point(0, 249);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(1006, 30);
             this.statusStrip1.TabIndex = 2;
             this.statusStrip1.Text = "statusStrip1";
             // 
-            // toolStripStatusLabel1
-            // 
-            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(118, 25);
-            this.toolStripStatusLabel1.Text = "터미널 상태 :";
-            // 
             // consoleState
             // 
             this.consoleState.Name = "consoleState";
-            this.consoleState.Size = new System.Drawing.Size(115, 25);
-            this.consoleState.Text = "Not Running";
+            this.consoleState.Size = new System.Drawing.Size(118, 25);
+            this.consoleState.Text = "터미널 상태 :";
+            // 
+            // toolStripProgressBar1
+            // 
+            this.toolStripProgressBar1.Name = "toolStripProgressBar1";
+            this.toolStripProgressBar1.Size = new System.Drawing.Size(100, 24);
             // 
             // menuStrip1
             // 
@@ -553,7 +552,6 @@
         private System.Windows.Forms.ImageList imageList1;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.StatusStrip statusStrip1;
-        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ToolStripStatusLabel consoleState;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem 파일ToolStripMenuItem;
@@ -593,5 +591,6 @@
         private System.Windows.Forms.ToolStripMenuItem 단축기설정ToolStripMenuItem;
         private FarsiLibrary.Win.FATabStrip tsConsole;
         private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
     }
 }

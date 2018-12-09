@@ -1,0 +1,214 @@
+﻿<Window x:Class="PyCraft_IDE_WPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:local="clr-namespace:PyCraft_IDE_WPF"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:dragablz="http://dragablz.net/winfx/xaml/dragablz"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:dockablz="http://dragablz.net/winfx/xaml/dockablz"
+        xmlns:PyCraftIDE="clr-namespace:PyCraft_IDE_WPF"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance PyCraftIDE:MainModel, IsDesignTimeCreatable=False}"
+        Title="MainWindow" Height="450" Width="800"
+        WindowStartupLocation="CenterScreen"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}" SizeChanged="Window_SizeChanged" Loaded="Window_Loaded" Closing="Window_Closing">
+    <Window.Resources>
+        <ResourceDictionary>
+            <DataTemplate DataType="{x:Type dragablz:HeaderedItemViewModel}">
+                <ContentControl Content="{Binding Content}" Margin="4 4 4 4" FontSize="14" />
+            </DataTemplate>
+            <dragablz:InterTabController x:Key="InterTabController" x:Shared="False" InterTabClient="{Binding InterTabClient}" Partition="2AE89D18-F236-4D20-9605-6C03319038E6" />
+            <dragablz:DragablzIcon Width="24" Height="24" Margin="0 -8 0 0"
+                                   x:Key="WindowIcon" x:Shared="False" />
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <DockPanel>
+        <Menu IsMainMenu="True" DockPanel.Dock="Top" Height="49">
+            <MenuItem Header="_File">
+                <MenuItem Header="_New File" Click="newFile_Click" InputGestureText="Ctrl+N">
+                    <MenuItem.Icon>
+                        <materialDesign:PackIcon Kind="File" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Open">
+                    <MenuItem Header="File" Click="openFile_Click" InputGestureText="Ctrl+O">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="FileFind" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Folder" Click="openFolder_Click">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="FolderSearch" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="Save" Click="saveFile_Click" InputGestureText="Ctrl+S">
+                    <MenuItem.Icon>
+                        <materialDesign:PackIcon Kind="ContentSave" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Save As.." Click="saveFileAsMenu_Click">
+                    <MenuItem.Icon>
+                        <materialDesign:PackIcon Kind="ContentSaveAll" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="Exit" InputGestureText="Ctrl+E">
+                    <MenuItem.Icon>
+                        <materialDesign:PackIcon Kind="ExitToApp" />
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Cut" Command="Cut">
+                    <MenuItem.Icon>
+                        <materialDesign:PackIcon Kind="ContentCut" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Copy" Command="Copy">
+                    <MenuItem.Icon>
+                        <materialDesign:PackIcon Kind="ContentCopy" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Paste" Command="Paste">
+                    <MenuItem.Icon>
+                        <materialDesign:PackIcon Kind="ContentPaste" />
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+        </Menu>
+        <ToolBarTray DockPanel.Dock="Top">
+            <ToolBar Style="{DynamicResource MaterialDesignToolBar}">
+                <Button ToolTip="Save" Click="saveFile_Click">
+                    <materialDesign:PackIcon Kind="ContentSave" />
+                </Button>
+                <Separator />
+                <Button ToolTip="Undo" Command="Undo">
+                    <materialDesign:PackIcon Kind="Undo" />
+                </Button>
+                <Button ToolTip="Redo" Command="Redo">
+                    <materialDesign:PackIcon Kind="Redo" />
+                </Button>
+                <Button ToolTip="Python Console">
+                    <materialDesign:PackIcon Kind="Console" />
+                </Button>
+                <Separator />
+                <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}"
+                        ToolTip="Run" Click="runPy_Click">
+                    <materialDesign:PackIcon Kind="ArrowRightDropCircleOutline" Height="24" Width="24" />
+                </Button>
+                <Button ToolTip="Download Files">
+                    <materialDesign:PackIcon Kind="ArrowDownBoldCircleOutline" />
+                </Button>
+            </ToolBar>
+        </ToolBarTray>
+        <materialDesign:Snackbar DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" x:Name="snackBar" >
+            <materialDesign:SnackbarMessage Content="Hello World" ActionContent="OK" />
+        </materialDesign:Snackbar>
+        <StackPanel Orientation="Horizontal">
+            <Expander ExpandDirection="Right">
+                <Expander.Header>
+                    <TextBlock Text="Explorer" 
+                                   RenderTransformOrigin=".5,.5">
+                        <TextBlock.LayoutTransform>
+                            <RotateTransform Angle="90" />
+                        </TextBlock.LayoutTransform>
+                    </TextBlock>
+                </Expander.Header>
+                <StackPanel Orientation="Vertical"
+                                TextBlock.Foreground="{DynamicResource MaterialDesignBody}"
+                                Margin="0,0,0,0">
+                    <Border>
+                        <GroupBox Header="Explorer" Style="{DynamicResource MaterialDesignGroupBox}" Margin="0" UseLayoutRounding="True" SnapsToDevicePixels="True" >
+                            <TreeView MinWidth="200" MaxWidth="300" x:Name="foldersItem" 
+                                  SelectedItemChanged="foldersItem_SelectedItemChanged" 
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                <TreeView.Resources>
+                                    <Style TargetType="{x:Type TreeViewItem}">
+                                        <Setter Property="HeaderTemplate">
+                                            <Setter.Value>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Image Name="img"  Width="20" Height="20" Stretch="Fill" 
+                                                           Source="{Binding RelativeSource={RelativeSource 
+                                                                            Mode=FindAncestor, 
+                                                                            AncestorType={x:Type TreeViewItem}}, 
+                                                                            Path=Header, 
+                                                                            Converter={x:Static local:HeaderToImageConverter.Instance}}" 
+                                                           />
+                                                        <TextBlock Text="{Binding}" Style="{StaticResource MaterialDesignTitleTextBlock}" Margin="5,0" FontSize="12" Foreground="White"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </TreeView.Resources>
+                            </TreeView>
+                        </GroupBox>
+                    </Border>
+                </StackPanel>
+            </Expander>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Bottom">
+            <Expander ExpandDirection="Up" HorizontalAlignment="Stretch">
+                <Expander.Header>
+                    <TextBlock Text="Console" 
+                                   RenderTransformOrigin=".5,.5">
+                        <TextBlock.LayoutTransform>
+                            <RotateTransform Angle="0" />
+                        </TextBlock.LayoutTransform>
+                    </TextBlock>
+                </Expander.Header>
+                <StackPanel Orientation="Vertical"
+                                TextBlock.Foreground="{DynamicResource MaterialDesignBody}"
+                                Margin="0,0,0,0">
+                    <Border>
+                        <GroupBox Header="Console" Style="{DynamicResource MaterialDesignGroupBox}" Margin="0" UseLayoutRounding="True" SnapsToDevicePixels="True" >
+                            <StackPanel>
+                                <TextBox Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
+                                         Margin="0,0,0,0" x:Name="tbConsole"
+                                         VerticalAlignment="Top"
+                                         Height="100"
+                                         AcceptsReturn="True"
+                                         TextWrapping="Wrap"
+                                         VerticalScrollBarVisibility="Auto" 
+                                         IsReadOnly="True">
+                                </TextBox>
+                            </StackPanel>
+                        </GroupBox>
+                    </Border>
+                </StackPanel>
+            </Expander>
+        </StackPanel>
+        <dockablz:Layout Partition="2AE89D18-F236-4D20-9605-6C03319038E6" Name="RootLayout"
+                     FloatingItemsSource="{Binding ToolItems}"
+                     FloatingItemHeaderMemberPath="Header"
+                     ClosingFloatingItemCallback="{Binding ClosingFloatingItemHandler}"
+                     FloatingItemsContainerMargin="0 0 0 0">
+            <dockablz:Layout.BranchTemplate>
+                <DataTemplate>
+                    <dragablz:TabablzControl >
+                        <dragablz:TabablzControl.InterTabController>
+                            <dragablz:InterTabController InterTabClient="{Binding InterTabClient}" Partition="2AE89D18-F236-4D20-9605-6C03319038E6" />
+                        </dragablz:TabablzControl.InterTabController>
+                    </dragablz:TabablzControl>
+                </DataTemplate>
+            </dockablz:Layout.BranchTemplate>
+            <dragablz:TabablzControl x:Name="mainTab"
+                                 AddLocationHint="After" Margin="0">
+                <dragablz:TabablzControl.InterTabController>
+                    <dragablz:InterTabController InterTabClient="{Binding InterTabClient}" Partition="2AE89D18-F236-4D20-9605-6C03319038E6" />
+                </dragablz:TabablzControl.InterTabController>
+            </dragablz:TabablzControl>
+        </dockablz:Layout>
+    </DockPanel>
+</Window>
