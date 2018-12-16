@@ -174,15 +174,7 @@
                     <Border>
                         <GroupBox Header="Console" Style="{DynamicResource MaterialDesignGroupBox}" Margin="0" UseLayoutRounding="True" SnapsToDevicePixels="True" >
                             <StackPanel>
-                                <TextBox Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
-                                         Margin="0,0,0,0" x:Name="tbConsole"
-                                         VerticalAlignment="Top"
-                                         Height="100"
-                                         AcceptsReturn="True"
-                                         TextWrapping="Wrap"
-                                         VerticalScrollBarVisibility="Auto" 
-                                         IsReadOnly="True">
-                                </TextBox>
+                                
                             </StackPanel>
                         </GroupBox>
                     </Border>

@@ -12,6 +12,9 @@ using System.Diagnostics;
 using System.Threading;
 using System.Windows.Threading;
 using System.Security;
+using System.Windows.Media;
+using ICSharpCode.SharpZipLib.Zip;
+using System.Net;
 
 namespace PyCraft_IDE_WPF
 {
@@ -30,7 +33,10 @@ namespace PyCraft_IDE_WPF
         SnackbarMessageQueue msgQueue;
 
         private string workingDir = Environment.CurrentDirectory;
-        private bool isIntergratedConsole = true;
+        private string pycraftDir = Environment.CurrentDirectory + @"\pycraft";
+        private string pythonPath = Environment.CurrentDirectory + @"\Python\python-3.7.0.amd64\python.exe";
+        private bool isPycraftRunning = false;
+        private bool isPycraftInstalled = false;
 
         public MainWindow()
         {
@@ -56,13 +62,84 @@ namespace PyCraft_IDE_WPF
             CommandBindings.Add(new CommandBinding(MyCommand_CtrlY, Redo));
             msgQueue = new SnackbarMessageQueue(TimeSpan.FromMilliseconds(5000));
             snackBar.MessageQueue = msgQueue;
+            fileManager();
+        }
+
+        private void fileManager()
+        {
+            var p = new Process();
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.FileName = @"cmd.exe";
+            p.StartInfo.CreateNoWindow = true;
+            p.StartInfo.Arguments = "/k" + pythonPath + " -c \"import pycraft\" && echo %errorlevel% & exit";
+            p.Start();
+            string output = p.StandardOutput.ReadToEnd();
+
+            DirectoryInfo di = new DirectoryInfo(Environment.CurrentDirectory + @"\temp");
+            if (di.Exists == false)
+                di.Create();
+            if (output == "0 \r\n")
+            {
+                isPycraftInstalled = true;
+            }
+            else
+            {
+                isPycraftInstalled = false;
+            }
+        }
+
+        private void DeCompression(string filename, string destination)
+        {
+            string zipPath = filename;
+            string extractDir = destination;
+
+            FileStream fs = new FileStream(zipPath, FileMode.Open,
+                                         FileAccess.Read, FileShare.Read);
+
+            ZipInputStream zis = new ZipInputStream(fs);
+            ZipEntry ze;
+
+            while ((ze = zis.GetNextEntry()) != null)
+            {
+                if (!ze.IsDirectory)
+                {
+                    string fileName = Path.GetFileName(ze.Name);
+                    string destDir = Path.Combine(extractDir,
+                                     Path.GetDirectoryName(ze.Name));
+
+                    if (false == Directory.Exists(destDir))
+                    {
+                        Directory.CreateDirectory(destDir);
+                    }
+
+                    string destPath = Path.Combine(destDir, fileName);
+
+                    FileStream writer = new FileStream(
+                                    destPath, FileMode.Create,
+                                            FileAccess.Write,
+                                                FileShare.Write);
+
+                    byte[] buffer = new byte[2048];
+                    int len;
+                    while ((len = zis.Read(buffer, 0, buffer.Length)) > 0)
+                    {
+                        writer.Write(buffer, 0, len);
+                    }
+
+                    writer.Close();
+                }
+            }
+
+            zis.Close();
+            fs.Close();
         }
 
         public string SelectedImagePath { get; set; }
 
         private void timer_Tick(object sender, EventArgs e)
         {
-            //Add Timer Work
+
         }
 
         private void Populate(string path, TreeView _root, TreeViewItem _child, bool isfile)
@@ -272,29 +349,52 @@ namespace PyCraft_IDE_WPF
 
         private void runPy_Click(object sender, RoutedEventArgs e)
         {
-            // 쓰레드 사용하고 비동기로 출력값 받아오기
-            
-            var s = currEditor.FileName;
-            if (s != null)
+            if (isPycraftInstalled == true)
             {
-                new Thread(() =>
+                if (isPycraftRunning == false)
                 {
-                    Thread.CurrentThread.IsBackground = true;
-
-                    if (isIntergratedConsole == true)
-                    {
-                        Thread.CurrentThread.IsBackground = true;
-
-                        var cmd = new Process();
-                        cmd.StartInfo.FileName = Environment.CurrentDirectory + @"\Python\python-3.7.0.amd64\python.exe"; //@"cmd.exe";
-                        cmd.StartInfo.Arguments = s; // cmd 실행시  @"/C python " + s;  사용 /K 명령이 끝나도 cmd 유지 /C 명령이 끝나면 cmd 종료
-                        cmd.StartInfo.WorkingDirectory = s.Replace("\\" + Path.GetFileName(s), "");
-                        cmd.StartInfo.ErrorDialog = true;
-                        cmd.Start();
-                        cmd.WaitForExit();
-                    }
-                }).Start();
+                    runPython("pycraft", ProcessWindowStyle.Minimized);
+                    isPycraftRunning = true;
+                }
             }
+            if (currEditor.FileName != null)
+            {
+                runPython(currEditor.FileName, ProcessWindowStyle.Normal);
+            }
+        }
+
+        private void runPython(string pyFile, ProcessWindowStyle windowStyle)
+        {
+            new Thread(() =>
+            {
+                Thread.CurrentThread.IsBackground = true;
+                var cmd = new Process();
+                if (pyFile == "pycraft")
+                {
+                    cmd.StartInfo.FileName = @"cmd.exe";
+                    cmd.StartInfo.WorkingDirectory = Environment.CurrentDirectory + @"\Python\scripts";
+                    cmd.StartInfo.Arguments = "/c env_for_icons.bat && pycraft";
+                    cmd.StartInfo.UseShellExecute = false;
+                    cmd.Exited += new EventHandler(pyProcess_Exited);
+                    cmd.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
+                }
+                else
+                {
+                    cmd.StartInfo.FileName = pythonPath;
+                    cmd.StartInfo.Arguments = pyFile;
+                    cmd.StartInfo.WorkingDirectory = pyFile.Replace("\\" + Path.GetFileName(pyFile), "");
+                    cmd.StartInfo.WindowStyle = windowStyle;
+                }
+
+                cmd.StartInfo.ErrorDialog = true;
+                cmd.Start();
+                cmd.WaitForExit();
+            }).Start();
+        }
+
+        private void pyProcess_Exited(object sender, EventArgs e)
+        {
+            isPycraftRunning = false;
         }
     }
 }
