@@ -171,5 +171,11 @@
     <Resource Include="Images\img.png" />
     <Resource Include="Images\py.png" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\IronPythonConsoleForm\IronPythonConsoleForm.csproj">
+      <Project>{5b4de2a6-8357-4f45-bf54-7c3cdffb7e22}</Project>
+      <Name>IronPythonConsoleForm</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

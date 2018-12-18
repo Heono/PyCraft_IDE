@@ -349,6 +349,13 @@ namespace PyCraft_IDE_WPF
 
         private void runPy_Click(object sender, RoutedEventArgs e)
         {
+            string statementsToRun = "";
+            if (currEditor.TextArea.Selection.Length > 0)
+                statementsToRun = currEditor.TextArea.Selection.GetText();
+            else
+                statementsToRun = currEditor.TextArea.Document.Text;
+            Console.Pad.Console.RunStatements(statementsToRun);
+            /*
             if (isPycraftInstalled == true)
             {
                 if (isPycraftRunning == false)
@@ -361,6 +368,7 @@ namespace PyCraft_IDE_WPF
             {
                 runPython(currEditor.FileName, ProcessWindowStyle.Normal);
             }
+            */
         }
 
         private void runPython(string pyFile, ProcessWindowStyle windowStyle)
